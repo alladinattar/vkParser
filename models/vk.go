@@ -1,4 +1,4 @@
-package domain
+package models
 
 type ProfileInfo struct{
 	FullName string `json:"fullname"`
