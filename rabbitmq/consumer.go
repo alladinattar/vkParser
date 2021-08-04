@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/streadway/amqp"
 	"log"
 	"net/http"
@@ -64,38 +65,40 @@ func GetTask() error {
 	return nil
 }
 
-
-
 func scrapeUser(id string) error {
-	urlFriends := "https://api.vk.com/method/friends.get?user_id=" + id + "&v=5.52&access_token=" + os.Getenv("TOKEN")
-	friends, err := http.Get(urlFriends)
+	friends, err := getUsers(id, "friends.get")
 	if err != nil {
 		return err
 	}
-	var friendsResponse struct {
-		Response struct {
-			Items []int `json:"items"`
-		} `json:"response"`
-	}
-	err = json.NewDecoder(friends.Body).Decode(&friendsResponse)
-	if err != nil {
-		return err
-	}
-
-	//выенсти в одну структуру
-	var followersResponse struct {
-		Response struct {
-			Items []int `json:"items"`
-		} `json:"response"`
-	}
-	urlFollowers := "https://api.vk.com/method/users.getFollowers?user_id=" + id + "&v=5.52&access_token=" + os.Getenv("TOKEN")
-	followers, err := http.Get(urlFollowers)
+	followers, err := getUsers(id, "users.getFollowers")
 	if err!=nil{
 		return err
 	}
-	err = json.NewDecoder(followers.Body).Decode(&followersResponse)
-	if err != nil {
-		return err
+
+	for _, friend := range friends{
+
+	}
+
+	for _, follower := range followers{
+
 	}
 	return nil
+}
+
+func getUsers(id string, vkMethod string) ([]int, error) {
+	url := "https://api.vk.com/method/" + vkMethod + "?user_id=" + id + "&v=5.52&access_token=" + os.Getenv("TOKEN")
+	friends, err := http.Get(url)
+	if err != nil {
+		return []int{}, err
+	}
+	var usersResponse struct {
+		Response struct {
+			Items []int `json:"items"`
+		} `json:"response"`
+	}
+	err = json.NewDecoder(friends.Body).Decode(&usersResponse)
+	if err != nil {
+		return []int{}, err
+	}
+	return usersResponse.Response.Items, nil
 }
